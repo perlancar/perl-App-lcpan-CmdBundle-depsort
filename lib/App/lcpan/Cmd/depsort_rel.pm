@@ -55,7 +55,7 @@ sub handle_cmd {
     my @dists;
     my %reldists; # key = release name, val = dist name
     for my $rel (@$rels) {
-        $rel =~ /\A(\w+(?:-\w+)*)-(\d(?:\.\d+)*)\.(tar\.gz|tar\.bz2|zip)\z/
+        $rel =~ /\A(\w+(?:-\w+)*)-(\d+(?:\.\d+)*)\.(tar\.gz|tar\.bz2|zip)\z/
             or return [400, "Unrecognized release name $rel, please use DISTNAME-VERSION.tar.gz"];
         $reldists{$rel} = $1;
         push @dists, $1;
