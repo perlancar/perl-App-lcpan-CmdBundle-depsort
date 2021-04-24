@@ -25,6 +25,7 @@ $SPEC{handle_cmd} = {
 sub handle_cmd {
     require App::lcpan::Cmd::mod2dist;
     require Data::Graph::Util;
+    require List::Util;
 
     my %args = @_;
 
@@ -32,6 +33,8 @@ sub handle_cmd {
     my $dbh = $state->{dbh};
 
     my $dists = delete $args{dists};
+    $dists = [List::Util::uniq(@$dists)];
+    return [200, "OK (no sorting needed)", $dists] unless @$dists > 1;
 
     my %seen_dists;
     my %seen_mods;
@@ -63,6 +66,7 @@ sub handle_cmd {
     } # while @dists_to_check
     #return [200, "TMP", \%deps];
 
+    log_trace "Toposorting %s with dependency information %s ...", $dists, \%deps;
     my @sorted_dists;
     eval {
         @sorted_dists = Data::Graph::Util::toposort(

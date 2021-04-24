@@ -55,11 +55,12 @@ sub handle_cmd {
     my @dists;
     my %reldists; # key = release name, val = dist name
     for my $rel (@$rels) {
-        $rel =~ /\A(\w+(?:-\w+)*)-(\d+(?:\.\d+)*)\.(tar\.gz|tar\.bz2|zip)\z/
+        $rel =~ m!\A(?:.+/)?(\w+(?:-\w+)*)-(\d+(?:\.\d+)*)\.(tar\.gz|tar\.bz2|zip)\z!
             or return [400, "Unrecognized release name $rel, please use DISTNAME-VERSION.tar.gz"];
         $reldists{$rel} = $1;
         push @dists, $1;
     }
+    log_trace "Depsorting dists: %s ...", \@dists;
     my $res = App::lcpan::Cmd::depsort_dist::handle_cmd(dists => \@dists);
     return $res unless $res->[0] == 200;
     my %distpos; # key = dist, val = index
@@ -68,7 +69,8 @@ sub handle_cmd {
     }
 
     my @sorted_rels = sort {
-        $distpos{ $reldists{$a} } <=> $distpos{ $reldists{$b} }
+        $distpos{ $reldists{$a} } <=> $distpos{ $reldists{$b} } ||
+            $a cmp $b
     } @$rels;
     [200, "OK", \@sorted_rels];
 }
